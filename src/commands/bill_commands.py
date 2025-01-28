@@ -1,6 +1,7 @@
 import click
 import questionary
 from questionary import Style
+from providers.harvest_provider import HarvestProvider
 
 custom_styles = Style([
     ('qmark', 'fg:#673ab7 bold'),       # The '?' symbol
@@ -21,6 +22,12 @@ def bill_init():
         choices=["Harvest", "Stripe"],
         style=custom_styles
     ).ask()
+
+    provider = None 
+
+    if billing_provider == "Harvest":
+        provider = HarvestProvider()
+        provider.setup_config()
     
     click.echo(f"Selected billing provider: {billing_provider}")
 
