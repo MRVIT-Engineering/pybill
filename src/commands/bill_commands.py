@@ -1,8 +1,28 @@
 import click
+import questionary
+from questionary import Style
+
+custom_styles = Style([
+    ('qmark', 'fg:#673ab7 bold'),       # The '?' symbol
+    ('question', 'bold'),               # The question text
+    ('answer', 'fg:#f44336 bold'),      # The answered value
+    ('pointer', 'fg:#673ab7 bold'),     # The arrow pointer
+    ('highlighted', 'fg:#673ab7 bold'), # The highlighted choice
+    ('selected', 'fg:#cc5454'),         # The selected choice
+    ('separator', 'fg:#673ab7'),        # The separator between choices
+    ('instruction', 'fg:#808080'),   
+])
 
 @click.command()
 def bill_init():
     click.echo("Initiating PyBill CLI...")
+    billing_provider = questionary.select(
+        "Select your billing / time tracking provider",
+        choices=["Harvest", "Stripe"],
+        style=custom_styles
+    ).ask()
+    
+    click.echo(f"Selected billing provider: {billing_provider}")
 
 @click.command()
 def bill_list():
