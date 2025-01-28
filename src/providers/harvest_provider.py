@@ -1,4 +1,6 @@
 import click
+import questionary
+
 from providers.provider import Provider
 from pathlib import Path
 
@@ -9,17 +11,18 @@ class HarvestProvider(Provider):
         super().__init__()
         pass
     
+    def get_pat(self):
+        with open(CONFIG_FILE, 'r') as f:
+            return f.read().split('=')[1]
+    
     def setup_config(self):
-        click.echo("Setting up Harvest configuration...")
-        api_key = click.input("Enter your Harvest API key: ")
-        account_id = click.input("Enter your Harvest account ID: ")
-
+        pat = questionary.password("Enter your Harvest Personal Access Token: ").ask()
 
         with open(CONFIG_FILE, 'w') as f:
-            f.write(f"api_key: {api_key}\n")
-            f.write(f"account_id: {account_id}\n")
-        
-        click.echo(f"Harvest configuration setup complete. Config file saved to {CONFIG_FILE}")
+          f.write(f"PAT={pat}")
+
+        click.echo(f"Harvest PAT saved to config file {self.get_pat()} in {CONFIG_FILE}")
+
 
     def get_bills(self):
         click.echo("Getting bills from Harvest...")
