@@ -1,4 +1,4 @@
-import click
+import click #type: ignore
 from commands.bill_commands import bill_init, bill_list, bill_auth, bill_create
 
 @click.group()
