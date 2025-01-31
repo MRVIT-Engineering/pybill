@@ -1,6 +1,11 @@
-import click
-import questionary
-from questionary import Style
+import click # type: ignore
+import questionary # type: ignore
+from rich.console import Console 
+from rich.panel import Panel
+from pyfiglet import Figlet
+
+from config.fs import read_from_config
+from questionary import Style # type: ignore
 from providers.harvest_provider import HarvestProvider
 
 custom_styles = Style([
@@ -14,22 +19,42 @@ custom_styles = Style([
     ('instruction', 'fg:#808080'),   
 ])
 
-@click.command()
-def bill_init():
-    click.echo("Initiating PyBill CLI...")
-    billing_provider = questionary.select(
-        "Select your billing / time tracking provider",
-        choices=["Harvest", "Stripe"],
-        style=custom_styles
-    ).ask()
-
-    provider = None 
-
-    if billing_provider == "Harvest":
-        provider = HarvestProvider()
-        provider.setup_config()
+def __print_welcome_text():
+    # Option 1: Using pyfiglet for ASCII art
+    f = Figlet(font='slant')
+    ascii_art = f.renderText('PyBill CLI')
     
-    click.echo(f"Selected billing provider: {billing_provider}")
+    # Option 2: Using rich for styled panel
+    console = Console()
+    welcome_panel = Panel(
+        f"[bold magenta]{ascii_art}[/bold magenta]\n"
+        "[cyan]A modern CLI tool for managing software development billable hours / incoices.[/cyan]",
+        border_style="green",
+        padding=(1, 2)
+    )
+    
+    console.print(welcome_panel)
+
+@click.command('init')
+def bill_init():
+
+    provider = read_from_config('PROVIDER')
+    print (f"Provider is {provider}")
+
+    if provider is None:
+        __print_welcome_text()
+        billing_provider = questionary.select(
+            "Select your billing / time tracking provider",
+            choices=["Harvest", "Stripe"],
+            style=custom_styles
+        ).ask()
+
+        if billing_provider == "Harvest":
+            provider = HarvestProvider()
+            provider.setup_config()
+    else:
+        click.echo(f"{provider} is already set up as the billing provider")  
+    
 
 @click.command()
 def bill_list():
