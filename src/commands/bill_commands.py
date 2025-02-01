@@ -1,5 +1,6 @@
 import click #type: ignore
 import questionary #type: ignore
+import asyncio #type: ignore
 from rich.console import Console #type: ignore
 from rich.panel import Panel #type: ignore  
 from pyfiglet import Figlet #type: ignore
@@ -7,7 +8,20 @@ from pyfiglet import Figlet #type: ignore
 from config.fs import read_from_config
 from questionary import Style #type: ignore
 from providers.harvest_provider import HarvestProvider
-
+from utils.date import get_first_day_of_month, get_last_day_of_month
+def with_provider(f):
+    def wrapper(self, *args, **kwargs):
+        configProvider = read_from_config('PROVIDER')
+        if configProvider == 'harvest':
+            self.provider = HarvestProvider()
+        
+        if not self.provider:
+            click.echo("No provider configured. Please run 'bill init' first.")
+            return
+            
+        return f(self, *args, **kwargs)
+    return wrapper
+  
 class BillCommands:
     def __init__(self):
         self.console = Console()
@@ -23,12 +37,14 @@ class BillCommands:
             ('instruction', 'fg:#808080'),
         ])
 
+    # Used in __init__ to get the provider's initial value if there is one.
     def _get_provider(self):
         provider_name = read_from_config('PROVIDER')
         if provider_name == 'harvest':
             return HarvestProvider()
         return None
-
+    
+    # Prints prettified welcome text to the console. 
     def __print_welcome_text(self):
         f = Figlet(font='slant')
         ascii_art = f.renderText('PyBill CLI')
@@ -61,11 +77,12 @@ class BillCommands:
         else:
             click.echo(f"{provider} is already set up as the billing provider")
 
-    def list_command(self):
-        if not self.provider:
-            click.echo("No provider configured. Please run 'bill init' first.")
-            return
-        self.provider.get_bills()
+    @with_provider
+    def list_time_entries_command(self, month: str):
+        first_day = get_first_day_of_month(month)
+        last_day = get_last_day_of_month(month)
+        
+        asyncio.run(self.provider.get_time_entries(first_day, last_day))
 
     def auth_command(self):
         if not self.provider:
@@ -87,17 +104,7 @@ bill_commands = BillCommands()
 def bill_init():
     return bill_commands.init_command()
 
-@click.command()
-def bill_list():
-    return bill_commands.list_command()
-
-@click.command()
-def bill_auth():
-    return bill_commands.auth_command()
-
-@click.command()
-@click.option("--name", help="Name of the bill")
-@click.option("--month", help="Month of the bill")
-def bill_create(name: str, month: str):
-    return bill_commands.create_command(name, month)
-
+@click.command('list-time')
+@click.argument('month', type=str, required=True)
+def bill_list_time_entries(month: str):
+    return bill_commands.list_time_entries_command(month)

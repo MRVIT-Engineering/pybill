@@ -1,5 +1,5 @@
 import click #type: ignore
-from commands.bill_commands import bill_init, bill_list, bill_auth, bill_create
+from commands.bill_commands import bill_init, bill_list_time_entries
 
 @click.group()
 def cli():
@@ -8,9 +8,7 @@ def cli():
 
 # Add all commands to the cli group
 cli.add_command(bill_init)
-cli.add_command(bill_list)
-cli.add_command(bill_auth)
-cli.add_command(bill_create)
+cli.add_command(bill_list_time_entries)
 
 if __name__ == '__main__':
     cli()
