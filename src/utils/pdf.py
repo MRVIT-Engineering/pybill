@@ -1,8 +1,8 @@
-from weasyprint import HTML 
+from weasyprint import HTML # type: ignore
 from datetime import datetime, timedelta
 from utils.fs import read_from_config
 
-def generate_invoice_pdf(time_entries, month: str, name: str = None):
+def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: dict = None):
     # Calculate payment term (30 days from now)
     payment_date = datetime.now() + timedelta(days=30)
 
@@ -10,9 +10,10 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None):
     for entry in time_entries:
         total_hours += float(entry['hours'])
 
-    rate_per_hour = read_from_config('VENDOR_RATE_PER_HOUR')
+    rate_per_hour = read_from_config('vendor_rate_per_hour')
     total_usd = total_hours * rate_per_hour
-    
+    series_name = read_from_config('invoice_series_name')
+    series_number = read_from_config('invoice_series_number')
 
     html_content = f"""
     <html>
@@ -65,7 +66,7 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None):
             </style>
         </head>
         <body>
-            <div class="invoice-header">INVOICE</div>
+            <div class="invoice-header">INVOICE {series_name} {series_number}</div>
             
             <div class="invoice-meta">
                 <div>Series MRVIT no. 0001 dated {datetime.now().strftime('%d/%m/%Y')}</div>
@@ -75,20 +76,19 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None):
             <div class="vendor-customer-section">
                 <div class="vendor-section">
                     <div class="section-title">VENDOR</div>
-                    <div>{read_from_config('VENDOR_NAME')}</div>
-                    <div>VAT CODE: {read_from_config('VENDOR_VAT_CODE')}</div>
-                    <div>No. Registrar of Companies: {read_from_config('NATIONAL_TRADE_REGISTER_NO')}</div>
-                    <div>Address: {read_from_config('VENDOR_ADDRESS')}</div>
-                    <div>State/Province: {read_from_config('VENDOR_CITY')}</div>
-                    <div>Country: {read_from_config('VENDOR_COUNTRY')}</div>
+                    <div>{read_from_config('vendor_name')}</div>
+                    <div>VAT CODE: {read_from_config('vendor_vat_code')}</div>
+                    <div>No. Registrar of Companies: {read_from_config('vendor_national_trade_register_no')}</div>
+                    <div>Address: {read_from_config('vendor_address')}</div>
+                    <div>State/Province: {read_from_config('vendor_city')}</div>
+                    <div>Country: {read_from_config('vendor_country')}</div>
                 </div>
 
                 <div class="customer-section">
                     <div class="section-title">CUSTOMER</div>
-                    <div>MCRO Technology, Inc</div>
-                    <div>Address: 1065 Tilman Road, Charlottesville, Virginia, United States</div>
-                    <div>State/Province: Virginia</div>
-                    <div>Country: United States</div>
+                    <div>{customer['name']}</div>
+                    <div>Address: {customer['address']}</div>
+                    <div>Country: {customer['country']}</div>
                 </div>
             </div>
 
@@ -117,14 +117,14 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None):
             </div>
 
             <div class="footer">
-                <div>Made by: {read_from_config('VENDOR_NAME')}</div>
+                <div>Made by: {read_from_config('vendor_name')}</div>
             </div>
         </body>
     </html>
     """
 
     # Generate PDF file
-    output_dir = read_from_config('INVOICES_FOLDER')
+    output_dir = read_from_config('invoices_folder')
     file_name = name if name else f"invoice_{month.lower()}_{datetime.now().strftime('%Y%m%d')}"
     output_file = f"{output_dir}/{file_name}.pdf"
     

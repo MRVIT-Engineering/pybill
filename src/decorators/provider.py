@@ -5,7 +5,7 @@ from utils.fs import read_from_config
 
 def with_provider(f):
     def wrapper(self, *args, **kwargs):
-        configProvider = read_from_config('PROVIDER')
+        configProvider = read_from_config('provider')
         if configProvider == 'harvest':
             self.provider = HarvestProvider()
         

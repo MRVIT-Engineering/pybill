@@ -48,3 +48,26 @@ def read_from_config(key: str) -> str | None:
             return config.get(key)
     except (FileNotFoundError, json.JSONDecodeError):
         return None
+
+def get_config_dict() -> dict:
+    """
+    Reads the entire config file as a dictionary.
+    Returns an empty dictionary if the file doesn't exist.
+    """
+    config_file = get_config_file()
+    return json.load(open(config_file, 'r')) if config_file.exists() else {}
+
+def replace_config(config: dict) -> None:
+    """
+    Replaces the entire config file with the provided dictionary.
+    """
+    config_file = get_config_file()
+    with open(config_file, 'w') as f:
+        json.dump(config, f, indent=2)
+
+def get_customer_by_id(id: str) -> dict:
+    """
+    Reads the customers from the config file as a dictionary.
+    """
+    config = get_config_dict()
+    return config.get('customers', {}).get(id, {})

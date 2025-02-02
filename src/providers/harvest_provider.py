@@ -19,8 +19,8 @@ class HarvestProvider(Provider):
         
     # Create HTTP request for Harvest API
     def __get_http_headers(self):
-      pat = read_from_config('PAT')
-      account_id = read_from_config('ACCOUNT_ID')
+      pat = read_from_config('pat')
+      account_id = read_from_config('account_id')
       
       if not pat or not account_id:
           raise ValueError("Missing PAT or Account ID in config")
@@ -46,23 +46,11 @@ class HarvestProvider(Provider):
         "updated_at": time_entry["updated_at"],
       }
     
-    """
-    Gets the bill config.
-    Used to check if the config is valid or not."""
-    def get_bill_config(self):
-      config_pat = read_from_config('PAT')
-      config_account_id = read_from_config('ACCOUNT_ID')
-
-      return {
-        config_pat,
-        config_account_id 
-      }
-    
     # Sets up the config file with the PAT
     def setup_config(self):
-      config_pat = read_from_config('PAT')
-      config_account_id = read_from_config('ACCOUNT_ID')
-      write_to_config("PROVIDER", "harvest")
+      config_pat = read_from_config('pat')
+      config_account_id = read_from_config('account_id')
+      write_to_config("provider", "harvest")
 
 
       # Get credentials synchronously before async operations
@@ -83,9 +71,9 @@ class HarvestProvider(Provider):
       pass
 
     # Creates a new bill in Harvest
-    async def create_bill(self, month: str, name: str):
+    async def create_bill(self, month: str, customer: str, name: str):
       time_entries = await self.get_time_entries(month)
-      generate_invoice_pdf(time_entries, month, name)
+      generate_invoice_pdf(time_entries, month, name, customer)
 
 
     # Fetches the time entries from Harvest
