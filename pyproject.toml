@@ -12,7 +12,8 @@ dependencies = [
     "questionary (>=2.1.0,<3.0.0)",
     "requests (>=2.32.3,<3.0.0)",
     "pyfiglet (>=1.0.2,<2.0.0)",
-    "rich (>=13.9.4,<14.0.0)"
+    "rich (>=13.9.4,<14.0.0)",
+    "weasyprint (>=64.0,<65.0)",
 ]
 
 [tool.poetry]
