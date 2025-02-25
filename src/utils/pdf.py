@@ -1,20 +1,22 @@
 from weasyprint import HTML # type: ignore
 from datetime import datetime, timedelta
 from utils.fs import read_from_config
+from pathlib import Path
 
 def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: dict = None):
-    # Calculate payment term (30 days from now)
-    payment_date = datetime.now() + timedelta(days=30)
+    # Calculate totals
+    vendor_name = read_from_config('vendor_name')
+    total_hours = sum(float(entry['hours']) for entry in time_entries)
+    rate_per_hour = float(read_from_config('vendor_rate_per_hour'))
+    subtotal = total_hours * rate_per_hour
+    vat_rate = 0.19  # 19% VAT in Romania
+    # vat_amount = subtotal * vat_rate
+    total = subtotal 
 
-    total_hours = 0
-    for entry in time_entries:
-        total_hours += float(entry['hours'])
-
-    rate_per_hour = read_from_config('vendor_rate_per_hour')
-    total_usd = total_hours * rate_per_hour
-    series_name = read_from_config('invoice_series_name')
-    series_number = read_from_config('invoice_series_number')
-
+    # Get invoice number and format it with leading zeros
+    invoice_number = int(read_from_config('invoice_series_number'))
+    formatted_invoice_number = f"{invoice_number:04d}"  # This will format numbers as 0001, 0012, etc.
+    
     html_content = f"""
     <html>
         <head>
@@ -63,20 +65,51 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
                     margin-top: 40px;
                     font-size: 12px;
                 }}
+                .logo {{
+                    width: 100px;
+                    height: auto;
+                    margin-bottom: 20px;
+                }}
+                .company-info {{
+                    display: flex;
+                    align-items: flex-start;
+                }}
+                .logo-container {{
+                    margin-right: 20px;
+                }}
+                .totals-table {{
+                    width: 300px;
+                    margin-left: auto;
+                    margin-top: 20px;
+                }}
+                .totals-table td {{
+                    padding: 5px;
+                }}
+                .totals-table .amount {{
+                    text-align: right;
+                }}
             </style>
         </head>
         <body>
-            <div class="invoice-header">INVOICE {series_name} {series_number}</div>
+            <div class="company-info">
+                <div class="logo-container">
+                    <img src="{read_from_config('vendor_logo')}" class="logo" />
+                </div>
+                <div>
+                    <div class="invoice-header">INVOICE</div>
+                </div>
+            </div>
             
             <div class="invoice-meta">
-                <div>Series MRVIT no. 0001 dated {datetime.now().strftime('%d/%m/%Y')}</div>
-                <div>Payment term {payment_date.strftime('%d/%m/%Y')}</div>
+                <div>Series {read_from_config('invoice_series_name')} no. {formatted_invoice_number} dated 31/01/2025</div>
+                <div>Payment term {(datetime.now() + timedelta(days=30)).strftime('%d/%m/%Y')}</div>
             </div>
 
             <div class="vendor-customer-section">
                 <div class="vendor-section">
                     <div class="section-title">VENDOR</div>
                     <div>{read_from_config('vendor_name')}</div>
+                    <div>{read_from_config('account_number')}</div>
                     <div>VAT CODE: {read_from_config('vendor_vat_code')}</div>
                     <div>No. Registrar of Companies: {read_from_config('vendor_national_trade_register_no')}</div>
                     <div>Address: {read_from_config('vendor_address')}</div>
@@ -108,25 +141,35 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
                     <td>Point</td>
                     <td>{total_hours}</td>
                     <td>{rate_per_hour:.2f}</td>
-                    <td>{total_usd:.2f}</td>
+                    <td>{subtotal:.2f}</td>
                 </tr>
             </table>
 
-            <div class="total-section">
-                <div>Total value USD: {total_usd:.2f}</div>
+            <div class="totals-table">
+                <table>
+                    <tr>
+                        <td>Subtotal USD:</td>
+                        <td class="amount">{subtotal:.2f}</td>
+                    </tr>
+                   
+                    <tr>
+                        <td><strong>Total USD:</strong></td>
+                        <td class="amount"><strong>{total:.2f}</strong></td>
+                    </tr>
+                </table>
             </div>
 
-            <div class="footer">
-                <div>Made by: {read_from_config('vendor_name')}</div>
-            </div>
+
         </body>
     </html>
     """
 
     # Generate PDF file
-    output_dir = read_from_config('invoices_folder')
-    file_name = name if name else f"invoice_{month.lower()}_{datetime.now().strftime('%Y%m%d')}"
-    output_file = f"{output_dir}/{file_name}.pdf"
+    output_dir = Path(read_from_config('invoices_folder'))
+    output_dir.mkdir(parents=True, exist_ok=True)
     
-    HTML(string=html_content).write_pdf(output_file)
-    return output_file
+    file_name = name if name else f"invoice_{read_from_config('invoice_series_name')}_{formatted_invoice_number}_{month.lower()}_{datetime.now().strftime('%Y%m%d')}"
+    output_file = output_dir / f"{file_name}.pdf"
+    
+    HTML(string=html_content).write_pdf(str(output_file))
+    return str(output_file)

@@ -19,8 +19,8 @@ class HarvestProvider(Provider):
         
     # Create HTTP request for Harvest API
     def __get_http_headers(self):
-      pat = read_from_config('pat')
-      account_id = read_from_config('account_id')
+      pat = read_from_config('PAT')
+      account_id = read_from_config('ACCOUNT_ID')
       
       if not pat or not account_id:
           raise ValueError("Missing PAT or Account ID in config")
@@ -48,8 +48,8 @@ class HarvestProvider(Provider):
     
     # Sets up the config file with the PAT
     def setup_config(self):
-      config_pat = read_from_config('pat')
-      config_account_id = read_from_config('account_id')
+      config_pat = read_from_config('PAT')
+      config_account_id = read_from_config('ACCOUNT_ID')
       write_to_config("provider", "harvest")
 
 

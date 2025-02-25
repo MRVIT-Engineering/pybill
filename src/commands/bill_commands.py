@@ -84,6 +84,7 @@ class BillCommands:
         national_trade_register_no = questionary.text('What is the national trade register number of your company? (CUI)').ask()
         vendor_name= questionary.text('What is the name of your company (vendor)?').ask()
         vendor_vat_code = questionary.text('What is the VAT code of your company?').ask()
+        account_number = questionary.text('What is the account number of your company?').ask()
         vendor_address = questionary.text('What is the address of your company?').ask()
         vendor_city = questionary.text('What is the city of your company?').ask()
         vendor_zip = questionary.text('What is the zip code of your company?').ask()
@@ -95,6 +96,7 @@ class BillCommands:
         currency = questionary.text('What is the currency for your company?').ask()
         invoice_series_name = questionary.text('Input a name for the invoice series?').ask()
         invoice_series_number = questionary.text('Input the invoice series starting number?').ask()
+        vendor_logo = questionary.text('Url with the logo of your company? (optional)').ask()
 
         write_to_config('vendor_name', vendor_name)
         write_to_config('vendor_vat_code', vendor_vat_code)
@@ -111,8 +113,9 @@ class BillCommands:
         write_to_config('configured', '1')
         write_to_config('invoice_series_name', invoice_series_name)
         write_to_config('invoice_series_number', int(invoice_series_number))
-
-
+        write_to_config('vendor_logo', vendor_logo)
+        write_to_config('account_number', account_number)
+    
     # Instance methods without Click decorators
     def init_command(self):
         provider = read_from_config('provider')
