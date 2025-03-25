@@ -3,15 +3,14 @@ from datetime import datetime, timedelta
 from utils.fs import read_from_config
 from pathlib import Path
 
-def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: dict = None):
+def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: dict = None, vat: bool = False):
     # Calculate totals
-    vendor_name = read_from_config('vendor_name')
     total_hours = sum(float(entry['hours']) for entry in time_entries)
     rate_per_hour = float(read_from_config('vendor_rate_per_hour'))
     subtotal = total_hours * rate_per_hour
     vat_rate = 0.19  # 19% VAT in Romania
-    # vat_amount = subtotal * vat_rate
-    total = subtotal 
+    vat_amount = subtotal * vat_rate
+    total = total + vat_amount if vat else total
 
     # Get invoice number and format it with leading zeros
     invoice_number = int(read_from_config('invoice_series_number'))

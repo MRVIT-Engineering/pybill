@@ -77,7 +77,7 @@ class BillCommands:
         """
         configured = read_from_config('configured')
         if configured == '1':
-            click.echo("Bill is already configured. Please run 'bill init' to reconfigure.")
+            click.echo("Bill is already configured.")
             return
         
         self._print_welcome_text()
