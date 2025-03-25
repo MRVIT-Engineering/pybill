@@ -151,7 +151,7 @@ class BillCommands:
         write_to_config('invoice_series_number', invoice_series_number + 1)
 
     @with_provider
-    def create_customer_command(self, name: str, customer_id: str, address: str, country: str, email: str, phone: str, vat: str):
+    def create_customer_command(self, name: str, customer_id: str, address: str, country: str, email: str, phone: str, vat: int):
         config = get_config_dict()
         config['customers'] = {
             customer_id: {
@@ -195,5 +195,5 @@ def bill_create(month: str, customer: str, name: str):
 @click.option('--email', type=str, required=False)
 @click.option('--phone', type=str, required=False)
 @click.option('--vat', type=str, required=False)
-def bill_create_customer(name: str, customer_id: str, address: str, country: str, email: str, phone: str, vat: str):
+def bill_create_customer(name: str, customer_id: str, address: str, country: str, email: str, phone: str, vat: int):
     return bill_commands.create_customer_command(name, customer_id, address, country, email, phone, vat)

@@ -10,7 +10,7 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
     subtotal = total_hours * rate_per_hour
     vat_rate = 0.19  # 19% VAT in Romania
     vat_amount = subtotal * vat_rate
-    total = total + vat_amount if vat else total
+    total = total + vat_amount if customer['vat'] else total
 
     # Get invoice number and format it with leading zeros
     invoice_number = int(read_from_config('invoice_series_number'))
