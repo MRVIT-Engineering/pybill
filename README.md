@@ -12,7 +12,7 @@ A command-line interface tool for managing bills and time tracking across differ
 ## Installation
 
 ```bash
-pip install pybill
+pip install mrvbill
 ```
 
 ## Getting Started
@@ -20,10 +20,10 @@ pip install pybill
 After installing the package, you can use the CLI to manage your bills and time tracking by first running the `init` command and going over the setup wizzard.
 
 ```bash
-pybill init
+mrvbill init
 ```
 
-This will create a config.json file inside the `root/~/.pybill/config.json` directory that looks like this. You can edit this file manually to change the config. The CLI currenlty only supports the Harvest provider, make sure you don't share your PAT with anyone.
+This will create a config.json file inside the `root/~/.mrvbill/config.json` directory that looks like this. You can edit this file manually to change the config. The CLI currenlty only supports the Harvest provider, make sure you don't share your PAT with anyone.
 
 ```json
 {

@@ -2,6 +2,7 @@ from weasyprint import HTML # type: ignore
 from datetime import datetime, timedelta
 from utils.fs import read_from_config
 from pathlib import Path
+import calendar
 
 def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: dict = None, vat: bool = False):
     # Calculate totals
@@ -10,11 +11,17 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
     subtotal = total_hours * rate_per_hour
     vat_rate = 0.19  # 19% VAT in Romania
     vat_amount = subtotal * vat_rate
-    total = total + vat_amount if customer['vat'] else total
+    total = subtotal + vat_amount if customer['vat'] else subtotal
 
     # Get invoice number and format it with leading zeros
     invoice_number = int(read_from_config('invoice_series_number'))
     formatted_invoice_number = f"{invoice_number:04d}"  # This will format numbers as 0001, 0012, etc.
+    
+    # Calculate the last day of the month
+    current_year = datetime.now().year
+    month_number = datetime.strptime(month, '%B').month
+    last_day = calendar.monthrange(current_year, month_number)[1]
+    invoice_date = datetime(current_year, month_number, last_day)
     
     html_content = f"""
     <html>
@@ -100,8 +107,8 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
             </div>
             
             <div class="invoice-meta">
-                <div>Series {read_from_config('invoice_series_name')} no. {formatted_invoice_number} dated 31/01/2025</div>
-                <div>Payment term {(datetime.now() + timedelta(days=30)).strftime('%d/%m/%Y')}</div>
+                <div>Series {read_from_config('invoice_series_name')} no. {formatted_invoice_number} dated {invoice_date.strftime('%d/%m/%Y')}</div>
+                <div>Payment term {(invoice_date + timedelta(days=30)).strftime('%d/%m/%Y')}</div>
             </div>
 
             <div class="vendor-customer-section">

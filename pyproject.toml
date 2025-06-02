@@ -1,5 +1,5 @@
 [project]
-name = "pybill"
+name = "mrvbill"
 version = "0.1.0"
 description = ""
 authors = [
@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [tool.poetry]
-scripts = { bill = "pybill:cli" }
+scripts = { bill = "mrvbill:cli" }
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
