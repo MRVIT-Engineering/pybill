@@ -1,7 +1,7 @@
 import click #type: ignore
 import importlib.metadata
-from commands.bill_commands import bill_init, bill_list_time_entries, bill_create, bill_create_customer
-from commands.common_commands import bill_help
+from mrvbill.commands.bill_commands import bill_init, bill_list_time_entries, bill_create, bill_create_customer
+from mrvbill.commands.common_commands import bill_help
 
 @click.group()
 @click.version_option(version=importlib.metadata.version("mrvbill"), prog_name="MrvBill CLI")

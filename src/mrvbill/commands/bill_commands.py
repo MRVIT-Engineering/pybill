@@ -7,9 +7,9 @@ from pyfiglet import Figlet #type: ignore
 from questionary import Style #type: ignore
 from rich.table import Table #type: ignore
 
-from providers.harvest_provider import HarvestProvider
-from utils.fs import read_from_config, write_to_config, get_config_dict, replace_config, get_customer_by_id
-from decorators.provider import with_provider
+from mrvbill.providers.harvest_provider import HarvestProvider
+from mrvbill.utils.fs import read_from_config, write_to_config, get_config_dict, replace_config, get_customer_by_id
+from mrvbill.decorators.provider import with_provider
   
 class BillCommands:
     def __init__(self):

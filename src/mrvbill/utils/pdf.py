@@ -1,6 +1,6 @@
 from weasyprint import HTML # type: ignore
 from datetime import datetime, timedelta
-from utils.fs import read_from_config
+from mrvbill.utils.fs import read_from_config
 from pathlib import Path
 import calendar
 

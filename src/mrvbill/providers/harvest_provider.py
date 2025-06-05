@@ -4,10 +4,10 @@ import aiohttp # type: ignore
 from rich.table import Table # type: ignore
 from rich.console import Console # type: ignore
 
-from utils.fs import write_to_config, read_from_config
-from providers.provider import Provider
-from utils.pdf import generate_invoice_pdf
-from utils.date import get_first_day_of_month, get_last_day_of_month
+from mrvbill.utils.fs import write_to_config, read_from_config
+from mrvbill.providers.provider import Provider
+from mrvbill.utils.pdf import generate_invoice_pdf
+from mrvbill.utils.date import get_first_day_of_month, get_last_day_of_month
 
 class HarvestProvider(Provider):
     __api_url = "https://api.harvestapp.com/v2"
