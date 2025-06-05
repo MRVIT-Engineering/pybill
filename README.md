@@ -12,7 +12,7 @@ A command-line interface tool for managing bills and time tracking across differ
 ## Installation
 
 ```bash
-pip install mrvbill
+pipx install mrvbill
 ```
 
 ## Getting Started

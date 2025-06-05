@@ -36,7 +36,7 @@ class BillCommands:
     # Prints prettified welcome text to the console. 
     def _print_welcome_text(self):
         f = Figlet(font='slant')
-        ascii_art = f.renderText('PyBill CLI')
+        ascii_art = f.renderText('MrvBill CLI')
         
         welcome_panel = Panel(
             f"[bold magenta]{ascii_art}[/bold magenta]\n"
