@@ -6,6 +6,7 @@ from rich.panel import Panel #type: ignore
 from pyfiglet import Figlet #type: ignore
 from questionary import Style #type: ignore
 from rich.table import Table #type: ignore
+from pathlib import Path
 
 from mrvbill.providers.harvest_provider import HarvestProvider
 from mrvbill.utils.fs import read_from_config, write_to_config, get_config_dict, replace_config, get_customer_by_id
@@ -81,40 +82,117 @@ class BillCommands:
             return
         
         self._print_welcome_text()
-        national_trade_register_no = questionary.text('What is the national trade register number of your company? (CUI)').ask()
-        vendor_name= questionary.text('What is the name of your company (vendor)?').ask()
-        vendor_vat_code = questionary.text('What is the VAT code of your company?').ask()
-        account_number = questionary.text('What is the account number of your company?').ask()
-        vendor_address = questionary.text('What is the address of your company?').ask()
-        vendor_city = questionary.text('What is the city of your company?').ask()
-        vendor_zip = questionary.text('What is the zip code of your company?').ask()
-        vendor_country = questionary.text('What is the country of your company?').ask()
-        vendor_email = questionary.text('What is the email of your company?').ask()
-        vendor_phone = questionary.text('What is the phone number of your company?').ask()
-        invoices_folder = questionary.path('Where should the invoices be saved?').ask()
-        rate_per_hour = questionary.text('What is the rate per hour for your company?').ask()
-        currency = questionary.text('What is the currency for your company?').ask()
-        invoice_series_name = questionary.text('Input a name for the invoice series?').ask()
-        invoice_series_number = questionary.text('Input the invoice series starting number?').ask()
-        vendor_logo = questionary.text('Url with the logo of your company? (optional)').ask()
+        
+        try:
+            national_trade_register_no = questionary.text('What is the national trade register number of your company? (CUI)').ask()
+            if national_trade_register_no is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            vendor_name = questionary.text('What is the name of your company (vendor)?').ask()
+            if vendor_name is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            vendor_vat_code = questionary.text('What is the VAT code of your company?').ask()
+            if vendor_vat_code is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            account_number = questionary.text('What is the account number of your company?').ask()
+            if account_number is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            vendor_address = questionary.text('What is the address of your company?').ask()
+            if vendor_address is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            vendor_city = questionary.text('What is the city of your company?').ask()
+            if vendor_city is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            vendor_zip = questionary.text('What is the zip code of your company?').ask()
+            if vendor_zip is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            vendor_country = questionary.text('What is the country of your company?').ask()
+            if vendor_country is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            vendor_email = questionary.text('What is the email of your company?').ask()
+            if vendor_email is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            vendor_phone = questionary.text('What is the phone number of your company?').ask()
+            if vendor_phone is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            invoices_folder = questionary.path(
+                'Where should the invoices be saved?',
+                default=str(Path.home())
+            ).ask()
+            if invoices_folder is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            rate_per_hour = questionary.text('What is the rate per hour for your company?').ask()
+            if rate_per_hour is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            currency = questionary.text('What is the currency for your company?').ask()
+            if currency is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            invoice_series_name = questionary.text('Input a name for the invoice series?').ask()
+            if invoice_series_name is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            invoice_series_number = questionary.text('Input the invoice series starting number?').ask()
+            if invoice_series_number is None:
+                click.echo("Setup cancelled by user.")
+                return
+                
+            vendor_logo = questionary.text('Url with the logo of your company? (optional)').ask()
+            if vendor_logo is None:
+                vendor_logo = ""  # Set empty string for optional field
 
-        write_to_config('vendor_name', vendor_name)
-        write_to_config('vendor_vat_code', vendor_vat_code)
-        write_to_config('vendor_address', vendor_address)
-        write_to_config('vendor_city', vendor_city)
-        write_to_config('vendor_zip', vendor_zip)
-        write_to_config('vendor_country', vendor_country)
-        write_to_config('vendor_rate_per_hour', int(rate_per_hour))
-        write_to_config('vendor_currency', currency)
-        write_to_config('vendor_email', vendor_email)
-        write_to_config('vendor_phone', vendor_phone)
-        write_to_config('invoices_folder', invoices_folder)
-        write_to_config('national_trade_register_no', national_trade_register_no)
-        write_to_config('configured', '1')
-        write_to_config('invoice_series_name', invoice_series_name)
-        write_to_config('invoice_series_number', int(invoice_series_number))
-        write_to_config('vendor_logo', vendor_logo)
-        write_to_config('account_number', account_number)
+            # Write all config values
+            write_to_config('vendor_name', vendor_name)
+            write_to_config('vendor_vat_code', vendor_vat_code)
+            write_to_config('vendor_address', vendor_address)
+            write_to_config('vendor_city', vendor_city)
+            write_to_config('vendor_zip', vendor_zip)
+            write_to_config('vendor_country', vendor_country)
+            write_to_config('vendor_rate_per_hour', int(rate_per_hour))
+            write_to_config('vendor_currency', currency)
+            write_to_config('vendor_email', vendor_email)
+            write_to_config('vendor_phone', vendor_phone)
+            write_to_config('invoices_folder', invoices_folder)
+            write_to_config('national_trade_register_no', national_trade_register_no)
+            write_to_config('configured', '1')
+            write_to_config('invoice_series_name', invoice_series_name)
+            write_to_config('invoice_series_number', int(invoice_series_number))
+            write_to_config('vendor_logo', vendor_logo)
+            write_to_config('account_number', account_number)
+            
+            click.echo("Configuration completed successfully!")
+            
+        except KeyboardInterrupt:
+            click.echo("\nSetup cancelled by user.")
+            return
+        except Exception as e:
+            click.echo(f"An error occurred during setup: {e}")
+            return
     
     # Instance methods without Click decorators
     def init_command(self):

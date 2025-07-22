@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mrvbill"
-version = "1.3.0"
+version = "1.6.0"
 description = "A command-line interface tool for managing bills and time tracking across different providers"
 authors = ["Rares Modure <rares.modure@mrv-it.com>"]
 readme = "README.md"

@@ -171,11 +171,24 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
     """
 
     # Generate PDF file
-    output_dir = Path(read_from_config('invoices_folder'))
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    file_name = name if name else f"invoice_{read_from_config('invoice_series_name')}_{formatted_invoice_number}_{month.lower()}_{datetime.now().strftime('%Y%m%d')}"
-    output_file = output_dir / f"{file_name}.pdf"
-    
-    HTML(string=html_content).write_pdf(str(output_file))
-    return str(output_file)
+
+    try:
+        output_dir = Path(read_from_config('invoices_folder'))
+        print(f"Output directory: {output_dir}")
+        print(f"Output directory exists: {output_dir.exists()}")
+        
+        output_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Created directory: {output_dir}")
+
+        file_name = name if name else f"invoice_{read_from_config('invoice_series_name')}_{formatted_invoice_number}_{month.lower()}_{datetime.now().strftime('%Y%m%d')}"
+        output_file = output_dir / f"{file_name}.pdf"
+        print(f"Output file path: {output_file}")
+        
+        HTML(string=html_content).write_pdf(str(output_file))
+        print(f"PDF generated successfully at: {output_file}")
+        return str(output_file)
+    except Exception as e:
+        print(f"Error generating PDF: {e}")
+        import traceback
+        traceback.print_exc()
+        return None

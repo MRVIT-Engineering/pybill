@@ -1,7 +1,7 @@
 import click
 
-from providers.harvest_provider import HarvestProvider
-from utils.fs import read_from_config
+from mrvbill.providers.harvest_provider import HarvestProvider
+from mrvbill.utils.fs import read_from_config
 
 def with_provider(f):
     def wrapper(self, *args, **kwargs):
