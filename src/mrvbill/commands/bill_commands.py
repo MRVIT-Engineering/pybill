@@ -219,28 +219,55 @@ class BillCommands:
         time_entries = await self.provider.get_time_entries(month)
         self._print_time_entries(time_entries)
 
-
     @with_provider
-    def create_command(self, month: str, customer: str, name: str):
+    def create_custom_command(self, month: str, customer: str, amount: int, service_name: str, currency: str, series: str):
         customer_dict = get_customer_by_id(customer)
-        asyncio.run(self.provider.create_bill(month, customer_dict  , name))
-        # Increment the invoice series number
-        invoice_series_number = read_from_config('invoice_series_number')
-        write_to_config('invoice_series_number', invoice_series_number + 1)
+        asyncio.run(self.provider.create_custom_bill(month, customer_dict, amount, service_name, currency, series))
+
 
     @with_provider
-    def create_customer_command(self, name: str, customer_id: str, address: str, country: str, email: str, phone: str, vat: int):
+    def create_command(self, month: str, customer: str, name: str, series_name: str):
+        customer_dict = get_customer_by_id(customer)
+        asyncio.run(self.provider.create_bill(month, customer_dict, name, series_name))
+        # Increment the invoice series number
+        series = read_from_config('series')
+        series[series_name] = series[series_name] + 1
+        write_to_config('series', series)
+    
+    def create_series_command(self, name: str, number: int):
         config = get_config_dict()
-        config['customers'] = {
-            customer_id: {
-                'name': name,
-                'address': address,
-                'country': country,
-                'email': email,
-                'phone': phone,
-                'vat': vat
-            }
+        if 'series' not in config:
+            config['series'] = {}
+        
+        config['series'][name] = number
+        replace_config(config)
+    
+    @with_provider
+    def create_customer_command(
+        self, 
+        name: str, 
+        customer_id: str, 
+        address: str, 
+        country: str, 
+        email: str,
+        phone: str, 
+        vat: int, 
+        currency: str
+        ):
+        config = get_config_dict()
+        current_customers = config['customers']
+
+        current_customers[customer_id] = {
+            'name': name,
+            'address': address,
+            'country': country,
+            'email': email,
+            'phone': phone,
+            'vat': vat,
+            'currency': currency
         }
+
+        config['customers'] = current_customers
         replace_config(config)
 
         
@@ -261,17 +288,34 @@ def bill_list_time_entries(month: str):
 @click.option('--month', type=str, required=True)
 @click.option('--customer', type=str, required=True)
 @click.option('--name', type=str)
-def bill_create(month: str, customer: str, name: str):
-    return bill_commands.create_command(month, customer, name)
+@click.option('--series', type=str)
+def bill_create(month: str, customer: str, name: str, series: str):
+    return bill_commands.create_command(month, customer, name, series)
 
+@click.command('create-custom')
+@click.option('--month', type=str, required=True)
+@click.option('--customer', type=str, required=True)
+@click.option('--series', type=str, required=False)
+@click.option('--amount', type=int, required=True)
+@click.option('--service-name', type=str, required=True)
+@click.option('--currency', type=str, required=True)
+def bill_create_custom(month: str, customer: str,  series: str, amount: int, service_name: str, currency: str):
+    return bill_commands.create_custom_command(month, customer, amount, service_name, currency, series)
 
 @click.command('create-customer')
 @click.option('--name', type=str, required=True)
 @click.option('--customer-id', type=str, required=True)
-@click.option('--address', type=str, required=True)
 @click.option('--country', type=str, required=True)
+@click.option('--currency', type=str, required=True)
+@click.option('--address', type=str, required=False)
 @click.option('--email', type=str, required=False)
 @click.option('--phone', type=str, required=False)
 @click.option('--vat', type=str, required=False)
-def bill_create_customer(name: str, customer_id: str, address: str, country: str, email: str, phone: str, vat: int):
-    return bill_commands.create_customer_command(name, customer_id, address, country, email, phone, vat)
+def bill_create_customer(name: str, customer_id: str, address: str, country: str, email: str, phone: str, vat: int, currency: str):
+    return bill_commands.create_customer_command(name, customer_id, address, country, email, phone, vat, currency)
+
+@click.command('create-series')
+@click.option('--name', type=str, required=True)
+@click.option('--number', type=int, required=False, default=1)
+def bill_create_series(name: str, number: int):
+    return bill_commands.create_series_command(name, number)

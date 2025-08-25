@@ -4,7 +4,7 @@ from mrvbill.utils.fs import read_from_config
 from pathlib import Path
 import calendar
 
-def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: dict = None, vat: bool = False):
+def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: dict = None, series_name: str = None):
     # Calculate totals
     total_hours = sum(float(entry['hours']) for entry in time_entries)
     rate_per_hour = float(read_from_config('vendor_rate_per_hour'))
@@ -13,8 +13,58 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
     vat_amount = subtotal * vat_rate
     total = subtotal + vat_amount if customer['vat'] else subtotal
 
+    return _generate_invoice_pdf_with_amount(
+        total_amount=total,
+        month=month,
+        name=name,
+        customer=customer,
+        series_name=series_name,
+        quantity=total_hours,
+        unit_price=rate_per_hour,
+        description=f"Software development services for {month} {datetime.now().year}"
+    )
+
+def generate_invoice_pdf_with_amount(amount: float, month: str, customer: dict, service_name: str, currency: str, series: str):
+    """
+    Generate an invoice PDF with a specified total amount instead of calculating from time entries.
+    
+    Args:
+        amount: The total amount for the invoice
+        month: The month for the invoice
+        customer: Customer information dict
+        service_name: Description of the service/product
+        currency: Currency code (e.g., 'USD', 'EUR')
+        series: Invoice series name
+    """
+    return _generate_invoice_pdf_with_amount(
+        total_amount=amount,
+        month=month,
+        name=None,
+        customer=customer,
+        series_name=series,
+        quantity=1,
+        unit_price=amount,
+        description=service_name,
+        currency=currency
+    )
+
+def _generate_invoice_pdf_with_amount(total_amount: float, month: str, name: str = None, customer: dict = None, series_name: str = None, quantity: float = 1, unit_price: float = None, description: str = None, currency: str = "USD"):
+    """
+    Internal method to generate invoice PDF with specified amount and details.
+    """
+    # Use total_amount as subtotal (before VAT)
+    subtotal = total_amount
+    vat_rate = 0.19  # 19% VAT in Romania
+    vat_amount = subtotal * vat_rate
+    total = subtotal + vat_amount if customer.get('vat', False) else subtotal
+
+    series = read_from_config('series')
+
+    print(f"Series: {series}")
+    print(f"Series name: {series_name}")
+    invoice_number = series[series_name]
+    
     # Get invoice number and format it with leading zeros
-    invoice_number = int(read_from_config('invoice_series_number'))
     formatted_invoice_number = f"{invoice_number:04d}"  # This will format numbers as 0001, 0012, etc.
     
     # Calculate the last day of the month
@@ -22,6 +72,9 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
     month_number = datetime.strptime(month, '%B').month
     last_day = calendar.monthrange(current_year, month_number)[1]
     invoice_date = datetime(current_year, month_number, last_day)
+    
+    # Use provided unit_price or calculate it from total_amount and quantity
+    display_unit_price = unit_price if unit_price is not None else (total_amount / quantity if quantity > 0 else total_amount)
     
     html_content = f"""
     <html>
@@ -107,7 +160,7 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
             </div>
             
             <div class="invoice-meta">
-                <div>Series {read_from_config('invoice_series_name')} no. {formatted_invoice_number} dated {invoice_date.strftime('%d/%m/%Y')}</div>
+                <div>Series {series_name} no. {formatted_invoice_number} dated {invoice_date.strftime('%d/%m/%Y')}</div>
                 <div>Payment term {(invoice_date + timedelta(days=30)).strftime('%d/%m/%Y')}</div>
             </div>
 
@@ -138,15 +191,15 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
                     <th>Description of products/services</th>
                     <th>Unit</th>
                     <th>Qty</th>
-                    <th>Unit price USD</th>
-                    <th>Value USD</th>
+                    <th>Unit price {currency}</th>
+                    <th>Value {currency}</th>
                 </tr>
                 <tr>
                     <td>1</td>
-                    <td>Software development services for {month} {datetime.now().year}</td>
+                    <td>{description}</td>
                     <td>Point</td>
-                    <td>{total_hours}</td>
-                    <td>{rate_per_hour:.2f}</td>
+                    <td>{quantity}</td>
+                    <td>{display_unit_price:.2f}</td>
                     <td>{subtotal:.2f}</td>
                 </tr>
             </table>
@@ -154,12 +207,12 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
             <div class="totals-table">
                 <table>
                     <tr>
-                        <td>Subtotal USD:</td>
+                        <td>Subtotal {currency}:</td>
                         <td class="amount">{subtotal:.2f}</td>
                     </tr>
                    
                     <tr>
-                        <td><strong>Total USD:</strong></td>
+                        <td><strong>Total {currency}:</strong></td>
                         <td class="amount"><strong>{total:.2f}</strong></td>
                     </tr>
                 </table>
@@ -180,7 +233,7 @@ def generate_invoice_pdf(time_entries, month: str, name: str = None, customer: d
         output_dir.mkdir(parents=True, exist_ok=True)
         print(f"Created directory: {output_dir}")
 
-        file_name = name if name else f"invoice_{read_from_config('invoice_series_name')}_{formatted_invoice_number}_{month.lower()}_{datetime.now().strftime('%Y%m%d')}"
+        file_name = name if name else f"invoice_{series_name}_{formatted_invoice_number}_{month.lower()}_{datetime.now().strftime('%Y%m%d')}"
         output_file = output_dir / f"{file_name}.pdf"
         print(f"Output file path: {output_file}")
         

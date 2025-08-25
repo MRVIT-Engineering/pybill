@@ -1,6 +1,6 @@
 import click #type: ignore
 import importlib.metadata
-from mrvbill.commands.bill_commands import bill_init, bill_list_time_entries, bill_create, bill_create_customer
+from mrvbill.commands.bill_commands import bill_init, bill_list_time_entries, bill_create, bill_create_customer, bill_create_series, bill_create_custom
 from mrvbill.commands.common_commands import bill_help
 
 @click.group()
@@ -15,6 +15,7 @@ cli.add_command(bill_list_time_entries)
 cli.add_command(bill_create)
 cli.add_command(bill_create_customer)
 cli.add_command(bill_help)
-
+cli.add_command(bill_create_series)
+cli.add_command(bill_create_custom)
 if __name__ == '__main__':
     cli()

@@ -6,7 +6,7 @@ from rich.console import Console # type: ignore
 
 from mrvbill.utils.fs import write_to_config, read_from_config
 from mrvbill.providers.provider import Provider
-from mrvbill.utils.pdf import generate_invoice_pdf
+from mrvbill.utils.pdf import generate_invoice_pdf, generate_invoice_pdf_with_amount
 from mrvbill.utils.date import get_first_day_of_month, get_last_day_of_month
 
 class HarvestProvider(Provider):
@@ -71,15 +71,20 @@ class HarvestProvider(Provider):
       pass
 
     # Creates a new bill in Harvest
-    async def create_bill(self, month: str, customer: str, name: str):
+    async def create_bill(self, month: str, customer: dict, name: str, series_name: str):
       time_entries = await self.get_time_entries(month)
-      generate_invoice_pdf(time_entries, month, name, customer)
+      generate_invoice_pdf(time_entries, month, name, customer, series_name)
 
+    # Creates a new bill in Harvest
+    async def create_custom_bill(self, month: str, customer: dict, amount: int, service_name: str, currency: str, series: str):
+      generate_invoice_pdf_with_amount(amount, month, customer, service_name, currency, series)
+      
 
     # Fetches the time entries from Harvest
     async def get_time_entries(self, month: str):
       first_day = get_first_day_of_month(month)
       last_day = get_last_day_of_month(month)
+      
       async with aiohttp.ClientSession() as session:
         async with session.get(f"{self.__api_url}/time_entries?from={first_day}&to={last_day}", headers=self.__get_http_headers()) as response:
           data = await response.json()
